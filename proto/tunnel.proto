@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package tunnel;
+
+service Tunnel {
+  rpc SendPackets (stream Packet) returns (Empty);
+  rpc ReceivePackets (Empty) returns (stream Packet);
+}
+
+message Packet {
+  Client client = 1; // reserved for multi client version
+  bytes tcp_packet = 2;
+}
+
+message Client {
+    uint64 client_id = 1;
+}
+
+message Empty {}

@@ -92,6 +92,7 @@ impl Tunnel for TunnelService {
             );
         }
         info!("Agent finished streaming of packets");
+        // TODO: remove agent_sender
         Ok(Response::new(Empty {}))
     }
 
@@ -103,7 +104,7 @@ impl Tunnel for TunnelService {
         debug!("Agent on {} is trying to connect", agent_addr);
         let mut sender = self.agent_sender.write().await;
         if sender.is_none() {
-            let (tx, rx) = mpsc::channel(4);
+            let (tx, rx) = mpsc::channel(100);
             let _ = sender.insert(tx);
             info!("Agent receives packets on {}", agent_addr);
             Ok(Response::new(ReceiverStream::new(rx)))

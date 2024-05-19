@@ -8,7 +8,7 @@ service Tunnel {
 }
 
 message Packet {
-  Client client = 1; // reserved for multi client version
+  Client client = 1;
   bytes tcp_packet = 2;
 }
 

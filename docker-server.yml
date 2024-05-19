@@ -1,0 +1,8 @@
+services:
+  server:
+    build: .
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    entrypoint: cargo run --release --bin server
+    network_mode: host

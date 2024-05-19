@@ -31,6 +31,8 @@ impl Eq for Client {
     }
 }
 
+impl Copy for Client {}
+
 impl Client {
     fn new(addr: SocketAddr) -> Self {
         let mut hasher = DefaultHasher::new();
@@ -83,7 +85,10 @@ impl Tunnel for TunnelService {
                 .await
                 .write_all(&packet.tcp_packet)
                 .await
-                .map_err(|_| Status::internal("Failed to write to client"))?;
+                .map_err(|err| {
+                    error!("Failed to write to client: {}", err);
+                    Status::internal("Failed to write to client")
+                })?;
             debug!(
                 "Packet of size {} from agent on {} was sent to client on {}",
                 packet_size,
@@ -92,7 +97,7 @@ impl Tunnel for TunnelService {
             );
         }
         info!("Agent finished streaming of packets");
-        // TODO: remove agent_sender
+        drop(self.agent_sender.write().await.take());
         Ok(Response::new(Empty {}))
     }
 
@@ -121,7 +126,9 @@ impl TunnelService {
         let client = Client::new(addr.clone());
         match self.clients.write().await.entry(client.clone()) {
             Entry::Vacant(e) => {
-                e.insert(ClientChannels { tcp_writer: Mutex::new(writer) });
+                e.insert(ClientChannels {
+                    tcp_writer: Mutex::new(writer),
+                });
                 debug!("Client on {} saved", addr);
             }
             Entry::Occupied(_) => {
@@ -129,7 +136,7 @@ impl TunnelService {
                 return;
             }
         }
-        let mut buffer = [0; 4096];
+        let mut buffer = [0; 1024 * 64];
         info!("Reading packets from client {}", addr);
         while let Ok(bytes_read) = reader.read(&mut buffer).await {
             if bytes_read == 0 {

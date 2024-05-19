@@ -1,0 +1,20 @@
+services:
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ./nginx/content:/usr/share/nginx/html/content:ro
+      - ./nginx/conf/:/etc/nginx/conf.d/:ro
+
+    ## Local run:
+    # ports:
+    #   - "${AGENT_LOCAL_WEB_PORT}:80"
+
+  ## Docker run:
+  agent:
+    build: .
+    working_dir: /usr/src/app
+    volumes:
+      - .:/usr/src/app
+    entrypoint: cargo run --release --bin agent
+    links:
+      - nginx

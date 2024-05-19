@@ -3,7 +3,9 @@
 ## Architecture
 ![scheme](./scheme.jpg)
 
-Clients can interact with server independently. Fail or slowness of one of them does not affect the others
+* Clients can interact with server independently. Fail or slowness of one of them does not affect the others.
+
+* Can be used for remote access by any tcp-based protocol, including http
 
 ## Technologies:
 * Rust language: [Tokio](https://tokio.rs/) runtime, [Tonic](https://docs.rs/tonic/latest/tonic/) (gRPC)
